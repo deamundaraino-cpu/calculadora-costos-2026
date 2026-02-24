@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora Costos Laborales Colombia 2026</title>
+    <meta name="description"
+        content="Calculadora de costos laborales para Colombia 2026. Calcula salario total con prestaciones, seguridad social, parafiscales y ARL según el SMMLV 2026." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#8B5CF6" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <!-- Login Overlay -->
+    <div id="loginOverlay"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-[#09090f]/95 backdrop-blur-xl transition-all duration-500">
+        <div
+            class="bg-[#14142b] border border-indigo-500/30 p-8 rounded-2xl shadow-[0_0_50px_rgba(139,92,246,0.2)] max-w-sm w-full text-center transform scale-100 transition-transform">
+            <h2
+                class="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent mb-2">
+                Acceso Seguro</h2>
+            <p class="text-sm text-gray-400 mb-6 font-medium">Calculadora Costos 2026</p>
+            <input type="text" id="loginUser" autocomplete="off" placeholder="Usuario"
+                class="w-full bg-[#0a0a10] border border-gray-700/50 rounded-xl p-3.5 text-white mb-4 focus:outline-none focus:border-purple-500/70 focus:ring-1 focus:ring-purple-500/50 transition-all text-sm font-medium" />
+            <input type="password" id="loginPass" placeholder="Contraseña"
+                class="w-full bg-[#0a0a10] border border-gray-700/50 rounded-xl p-3.5 text-white mb-6 focus:outline-none focus:border-purple-500/70 focus:ring-1 focus:ring-purple-500/50 transition-all text-sm font-medium" />
+            <button id="btnLogin"
+                class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-lg hover:shadow-purple-500/30 text-sm tracking-wide mb-3">INGRESAR</button>
+            <button id="btnRegister"
+                class="w-full bg-[#1e1e38] hover:bg-[#2a2a4a] text-indigo-300 font-bold py-3.5 px-4 rounded-xl transition-all border border-indigo-500/30 text-sm tracking-wide hidden">REGISTRARSE</button>
+
+            <div class="mt-5 text-xs text-gray-400">
+                <span id="authToggleText">¿No tienes cuenta?</span>
+                <button id="btnToggleAuth"
+                    class="text-indigo-400 hover:text-indigo-300 font-bold transition-colors ml-1">Regístrate</button>
+            </div>
+
+            <p id="loginError" class="text-rose-400 text-xs mt-4 opacity-0 transition-opacity">Credenciales incorrectas.
+            </p>
+        </div>
+    </div>
+
+    <!-- Background animated particles -->
+    <div class="bg-canvas" id="bgCanvas"></div>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="32" height="32" rx="10" fill="url(#grad1)" />
+                        <path d="M8 22L12 12L16 18L20 10L24 22" stroke="white" stroke-width="2.2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <defs>
+                            <linearGradient id="grad1" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#6366F1" />
+                                <stop offset="1" stop-color="#8B5CF6" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">LaborCost <span class="brand-accent">CO</span></span>
+                    <span class="brand-sub">Colombia 2026</span>
+                </div>
+            </div>
+            <div class="header-badge flex gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="badge-dot"></span>
+                    SMMLV 2026: $1.750.905
+                </div>
+                <!-- Logout Button -->
+                <button id="btnLogout"
+                    class="hidden text-xs font-bold text-gray-400 hover:text-white transition-colors bg-[#1e1e38] px-3 py-1.5 rounded-full border border-gray-700 hover:border-indigo-500">Cerrar
+                    Sesión</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main App -->
+    <main class="app-main">
+        <div class="app-grid">
+
+            <!-- LEFT PANEL: Inputs -->
+            <aside class="panel panel-inputs">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+                        </svg>
+                        Parámetros del Empleado
+                    </h2>
+                </div>
+                <div class="panel-body">
+
+                    <!-- Salary Input -->
+                    <div class="field-group">
+                        <label class="field-label" for="salarioBase">
+                            Salario Base Mensual
+                            <span class="tooltip-trigger"
+                                data-tip="Ingresa el salario pactado con el empleado (mínimo $1.750.905)">?</span>
+                        </label>
+                        <div class="salary-input-wrap">
+                            <span class="currency-prefix">$</span>
+                            <input type="text" id="salarioBase" class="field-input salary-input" placeholder="1.750.905"
+                                value="1.750.905" inputmode="numeric" autocomplete="off" />
+                        </div>
+                        <div class="salary-slider-wrap">
+                            <input type="range" id="salarioSlider" class="salary-slider" min="1750905" max="20000000"
+                                step="50000" value="1750905" />
+                            <div class="slider-labels">
+                                <span>1 SMMLV</span>
+                                <span id="sliderLabel">1 SMMLV</span>
+                                <span>~11.4 SMMLV</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ARL Level -->
+                    <div class="field-group">
+                        <label class="field-label">
+                            Nivel de Riesgo ARL
+                            <span class="tooltip-trigger"
+                                data-tip="Clase de riesgo según actividad económica del empleado">?</span>
+                        </label>
+                        <div class="arl-grid" id="arlGrid">
+                            <button class="arl-btn active" data-level="1" id="arl1">
+                                <span class="arl-num">I</span>
+                                <span class="arl-name">Administrativo</span>
+                                <span class="arl-rate">0.522%</span>
+                            </button>
+                            <button class="arl-btn" data-level="2" id="arl2">
+                                <span class="arl-num">II</span>
+                                <span class="arl-name">Manufacturero</span>
+                                <span class="arl-rate">1.044%</span>
+                            </button>
+                            <button class="arl-btn" data-level="3" id="arl3">
+                                <span class="arl-num">III</span>
+                                <span class="arl-name">Proc. Pesados</span>
+                                <span class="arl-rate">2.436%</span>
+                            </button>
+                            <button class="arl-btn" data-level="4" id="arl4">
+                                <span class="arl-num">IV</span>
+                                <span class="arl-name">Transporte</span>
+                                <span class="arl-rate">4.350%</span>
+                            </button>
+                            <button class="arl-btn" data-level="5" id="arl5">
+                                <span class="arl-num">V</span>
+                                <span class="arl-name">Construcción</span>
+                                <span class="arl-rate">6.700%</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Toggle de Salud -->
+                    <div class="field-group">
+                        <label class="field-label">
+                            ¿Incluir Salud Patronal (8.5%)?
+                            <span class="tooltip-trigger"
+                                data-tip="Si está OFF aplica exoneración Ley 1607 (Salud = $0). Si está ON aplica 8.5%.">?</span>
+                        </label>
+                        <!-- Updated visual styles via Tailwind injection in JS / CSS -->
+                        <div class="toggle-card off border-2 transition-all duration-300 transform outline-none focus:ring-4 focus:ring-rose-500/30 font-medium hover:scale-[1.01]"
+                            id="toggleSalud">
+                            <div class="toggle-info">
+                                <div class="toggle-title">Salud Empresa</div>
+                                <div class="toggle-sub">Aplica 8.5% sobre la base IBC</div>
+                            </div>
+                            <div class="toggle-switch off shadow-inner" id="toggleSwitchSalud">
+                                <div class="toggle-thumb shadow-md" id="toggleThumbSalud">
+                                    <span class="toggle-state" id="toggleStateSalud">OFF</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Auxilio Toggle -->
+                    <div class="field-group">
+                        <label class="field-label">
+                            Auxilio de Transporte
+                            <span class="tooltip-trigger"
+                                data-tip="Permite incluir o excluir el pago del auxilio de transporte para quienes ganan hasta 2 SMMLV">?</span>
+                        </label>
+                        <div class="toggle-card on" id="toggleAuxilio">
+                            <div class="toggle-info">
+                                <div class="toggle-title">Pagar Auxilio</div>
+                                <div class="toggle-sub">Aplica si salario ≤ 2 SMMLV</div>
+                            </div>
+                            <div class="toggle-switch on" id="toggleSwitchAux">
+                                <div class="toggle-thumb active" id="toggleThumbAux">
+                                    <span class="toggle-state" id="toggleStateAux">ON</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Presets -->
+                    <div class="field-group">
+                        <label class="field-label">Perfiles Predefinidos</label>
+                        <div class="presets-grid">
+                            <button class="preset-btn" data-salary="1750905" data-arl="1" data-exo="true">
+                                <span class="preset-icon">🧑‍💼</span>
+                                <span>Mínimo<br /><small>Admin</small></span>
+                            </button>
+                            <button class="preset-btn" data-salary="3500000" data-arl="1" data-exo="true">
+                                <span class="preset-icon">💻</span>
+                                <span>Técnico<br /><small>$3.5M</small></span>
+                            </button>
+                            <button class="preset-btn" data-salary="6000000" data-arl="2" data-exo="true">
+                                <span class="preset-icon">🧑‍🔬</span>
+                                <span>Profesional<br /><small>$6M</small></span>
+                            </button>
+                            <button class="preset-btn" data-salary="12000000" data-arl="1" data-exo="false">
+                                <span class="preset-icon">👑</span>
+                                <span>Gerente<br /><small>$12M</small></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Historial de Sesión -->
+                    <div class="mt-8 bg-[#14142b]/80 border border-indigo-500/10 rounded-xl p-5 shadow-inner">
+                        <h3
+                            class="text-xs font-bold uppercase tracking-wider text-indigo-300 mb-4 flex items-center gap-2 border-b border-indigo-500/10 pb-2">
+                            <span>🕒</span> Sesión Reciente
+                        </h3>
+                        <div id="historyList" class="flex flex-col gap-3">
+                            <!-- Inyectado por JS -->
+                            <div class="text-xs text-gray-500 text-center py-2">Sin cálculos guardados aún.</div>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+
+            <!-- RIGHT PANEL: Results -->
+            <section class="panel panel-results">
+
+                <!-- Hero Total -->
+                <div class="result-hero">
+                    <div class="hero-label">Costo Total para la Empresa / Mes</div>
+                    <div class="hero-amount" id="heroTotal">$0</div>
+                    <div class="hero-meta">
+                        <span id="heroPercent" class="hero-pct">+0%</span>
+                        <span class="hero-meta-text">sobre el salario base</span>
+                        <span class="hero-divider">•</span>
+                        <span id="heroAnnual" class="hero-ann">$0 / año</span>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="scard scard-salary">
+                        <div class="scard-icon">💰</div>
+                        <div class="scard-label">Salario + Auxilio</div>
+                        <div class="scard-value" id="scardSalary">$0</div>
+                        <div class="scard-pct" id="scardSalaryPct">0%</div>
+                    </div>
+                    <div class="scard scard-ss">
+                        <div class="scard-icon">🏥</div>
+                        <div class="scard-label">Seguridad Social</div>
+                        <div class="scard-value" id="scardSS">$0</div>
+                        <div class="scard-pct" id="scardSSPct">0%</div>
+                    </div>
+                    <div class="scard scard-prest">
+                        <div class="scard-icon">📋</div>
+                        <div class="scard-label">Prestaciones</div>
+                        <div class="scard-value" id="scardPrest">$0</div>
+                        <div class="scard-pct" id="scardPrestPct">0%</div>
+                    </div>
+                    <div class="scard scard-para">
+                        <div class="scard-icon">🏛️</div>
+                        <div class="scard-label">Parafiscales</div>
+                        <div class="scard-value" id="scardPara">$0</div>
+                        <div class="scard-pct" id="scardParaPct">0%</div>
+                    </div>
+                </div>
+
+                <!-- Visual Bar Chart -->
+                <div class="breakdown-section">
+                    <h3 class="section-title">Desglose Visual</h3>
+                    <div class="cost-bars" id="costBars"></div>
+                </div>
+
+                <!-- Detailed Table -->
+                <div class="breakdown-section">
+                    <h3 class="section-title">Detalle Completo</h3>
+                    <div class="detail-table" id="detailTable">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Donut Chart -->
+                <div class="breakdown-section">
+                    <h3 class="section-title">Distribución del Costo</h3>
+                    <div class="donut-container">
+                        <svg class="donut-svg" viewBox="0 0 220 220" id="donutSvg">
+                            <circle class="donut-bg" cx="110" cy="110" r="80" />
+                            <!-- segments injected by JS -->
+                        </svg>
+                        <div class="donut-legend" id="donutLegend"></div>
+                    </div>
+                </div>
+
+                <!-- Monthly vs Annual Toggle -->
+                <div class="period-toggle">
+                    <button class="period-btn active" id="btnMonthly">Mensual</button>
+                    <button class="period-btn" id="btnAnnual">Anual × 12</button>
+                </div>
+
+                <!-- Botones de Exportación (Nuevos Módulos) -->
+                <div class="flex gap-4 px-7 mb-6">
+                    <button id="btnExportPDF"
+                        class="flex-1 bg-gradient-to-br from-[#10B981] to-[#059669] text-white font-bold py-3 px-4 rounded-xl hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:-translate-y-0.5 transition-all text-[0.85rem] tracking-wide border border-[#34D399]/30 flex items-center justify-center gap-2">
+                        📄 Reporte PDF
+                    </button>
+                    <button id="btnExportWA"
+                        class="flex-1 bg-gradient-to-br from-[#f59e0b] to-[#d97706] text-white font-bold py-3 px-4 rounded-xl hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:-translate-y-0.5 transition-all text-[0.85rem] tracking-wide border border-[#fbbf24]/30 flex items-center justify-center gap-2">
+                        💬 WApp / Copiar
+                    </button>
+                </div>
+
+                <!-- Legal Info Footer -->
+                <div class="legal-note">
+                    <svg viewBox="0 0 20 20" fill="currentColor" class="info-icon">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Valores calculados con base en la legislación vigente. SMMLV 2026: $1.750.905 · Aux. Transporte:
+                    $249.095. Los resultados son de carácter informativo.
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- Tooltip popup -->
+    <div class="tooltip-popup" id="tooltipPopup"></div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Registrar Service Worker para PWA Offline
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('ServiceWorker registrado con éxito: ', reg.scope))
+                    .catch(err => console.log('Registro de ServiceWorker falló: ', err));
+            });
+        }
+    </script>
+</body>
+
+</html>

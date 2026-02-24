@@ -1,0 +1,22 @@
+{
+  "name": "LaborCost CO 2026",
+  "short_name": "LaborCost",
+  "description": "Calculadora de Costos Laborales Colombia 2026",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#09090f",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/8B5CF6/FFFFFF?text=LCC",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/8B5CF6/FFFFFF?text=LCC",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
