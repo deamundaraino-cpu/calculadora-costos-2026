@@ -612,7 +612,7 @@ recalculate();
 // Inicializar Supabase
 const supabaseUrl = CONFIG_APP.SUPABASE_URL;
 const supabaseKey = CONFIG_APP.SUPABASE_KEY;
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // 1. Módulo de Autenticación (Supabase)
 const elAuth = {
@@ -661,7 +661,7 @@ function showOverlay() {
 }
 
 async function checkSession() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) {
     hideOverlay();
   } else {
@@ -670,7 +670,7 @@ async function checkSession() {
 }
 
 // Escuchar cambios de autenticación
-supabase.auth.onAuthStateChange((event, session) => {
+supabaseClient.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN') hideOverlay();
   if (event === 'SIGNED_OUT') showOverlay();
 });
@@ -688,7 +688,7 @@ elAuth.btn.addEventListener('click', async () => {
   if (!email || !password) return showError('Agrega correo y contraseña.');
   elAuth.btn.textContent = 'Cargando...';
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
   elAuth.btn.textContent = 'INGRESAR';
   if (error) {
@@ -708,7 +708,7 @@ elAuth.btnReg.addEventListener('click', async () => {
   if (!email || !password || password.length < 6) return showError('Agrega correo válido y contraseña de 6+ chars.');
   elAuth.btnReg.textContent = 'Cargando...';
 
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabaseClient.auth.signUp({ email, password });
 
   elAuth.btnReg.textContent = 'REGISTRARSE';
   if (error) {
@@ -725,7 +725,7 @@ elAuth.btnReg.addEventListener('click', async () => {
 
 // Cerrar sesión
 elAuth.logout.addEventListener('click', async () => {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   elAuth.error.classList.add('opacity-0');
   elAuth.error.classList.remove('text-emerald-400');
   elAuth.error.classList.add('text-rose-400');
