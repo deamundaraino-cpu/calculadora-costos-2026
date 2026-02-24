@@ -617,6 +617,7 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 // 1. Módulo de Autenticación (Supabase)
 const elAuth = {
   overlay: $('loginOverlay'),
+  title: $('authTitle'),
   user: $('loginUser'),
   pass: $('loginPass'),
   btn: $('btnLogin'),
@@ -632,11 +633,13 @@ let isRegisterMode = false;
 elAuth.toggle.addEventListener('click', () => {
   isRegisterMode = !isRegisterMode;
   if (isRegisterMode) {
+    elAuth.title.textContent = 'Crear Cuenta';
     elAuth.btn.classList.add('hidden');
     elAuth.btnReg.classList.remove('hidden');
     elAuth.toggleText.textContent = '¿Ya tienes cuenta?';
     elAuth.toggle.textContent = 'Ingresa';
   } else {
+    elAuth.title.textContent = 'Acceso Seguro';
     elAuth.btnReg.classList.add('hidden');
     elAuth.btn.classList.remove('hidden');
     elAuth.toggleText.textContent = '¿No tienes cuenta?';
